@@ -21,7 +21,7 @@ class TasksCommand:
     def read_completed(self):
         try:
             file = open(self.COMPLETED_TASKS_FILE, "r")
-            self.completed_items = file.readlines()
+            self.completed_items.extend(file.read().splitlines())
             file.close()
         except Exception:
             pass
@@ -123,11 +123,18 @@ $ python tasks.py runserver # Starts the tasks management server"""
 
     def render_pending_tasks(self):
         # Complete this method to return all incomplete tasks as HTML
-        return "<h1> Show Incomplete Tasks Here </h1>"
+        content = ["<h1>Pending Tasks:</h1>"]
+        for idx, (key, value) in enumerate(self.current_items.items()):
+            content.append(f"{idx + 1}. {value} [{key}]")
+        return "<br/>".join(content)
 
     def render_completed_tasks(self):
         # Complete this method to return all completed tasks as HTML
-        return "<h1> Show Completed Tasks Here </h1>"
+        contentComplete = ["<h1>Completed Tasks:</h1>"]
+        print("in funct:", self.completed_items)
+        for idx, item in enumerate(self.completed_items):
+            contentComplete.append(f"{idx+1}. {item}")
+        return "<br/>".join(contentComplete)
 
 
 class TasksServer(TasksCommand, BaseHTTPRequestHandler):
