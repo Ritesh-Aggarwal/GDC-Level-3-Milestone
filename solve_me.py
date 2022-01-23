@@ -1,4 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib import parse
 
 
 class TasksCommand:
@@ -136,6 +137,14 @@ $ python tasks.py runserver # Starts the tasks management server"""
             contentComplete.append(f"{idx+1}. {item}")
         return "<br/>".join(contentComplete)
 
+    def render_mark_as_done(self):
+        content = "<h1>Mark as done</h1>"
+        content += '<form action="/done" method="GET">'
+        content += '<input type="text" name="priority" id="priority" placeholder="Enter priority">'
+        content += '<button type="submit" id="submit">submit</button>'
+        content += "</form>"
+        return content
+
 
 class TasksServer(TasksCommand, BaseHTTPRequestHandler):
     def do_GET(self):
@@ -144,6 +153,13 @@ class TasksServer(TasksCommand, BaseHTTPRequestHandler):
             content = task_command_object.render_pending_tasks()
         elif self.path == "/completed":
             content = task_command_object.render_completed_tasks()
+        elif self.path.startswith("/done"):
+            content = task_command_object.render_mark_as_done()
+            # print("here:", self.path.split("?")[-1].split("=")[0])
+            if (self.path.split("?")[-1].split("=")[0]) == "priority":
+                p = int(self.path.split("?")[-1].split("=")[-1])
+                self.done([p])
+                content += "<p>Marked as done</p>"
         else:
             self.send_response(404)
             self.end_headers()
@@ -152,3 +168,21 @@ class TasksServer(TasksCommand, BaseHTTPRequestHandler):
         self.send_header("content-type", "text/html")
         self.end_headers()
         self.wfile.write(content.encode())
+
+    # def do_POST(self):
+    #     task_command_object = TasksCommand()
+    #     if self.path == "/done":
+    #         p = int(self.rfile.read(-1).decode().split("=")[-1])
+    #         content = (
+    #             task_command_object.render_mark_as_done()
+    #             + "<p>Task marked as done!</p>"
+    #         )
+    #         self.done([p])
+    #         # return self.do_GET()
+    #     else:
+    #         self.send_response(400)
+    #         self.end_headers()
+    #     self.send_response(200)
+    #     self.send_header("content-type", "text/html")
+    #     self.end_headers()
+    #     self.wfile.write(content.encode())
